@@ -31,18 +31,15 @@ namespace JsonWsp {
 				foreach (string part in tmp) {
 					url_parts.Add(part);
 				}
-				Console.WriteLine(url_parts);
 				url_parts.RemoveAt(url_parts.Count-1);
-				Console.WriteLine(url_parts);
-				m_service_url = String.Join("/",url_parts);
-				Console.WriteLine(m_service_url);
+				m_service_url = String.Join("/",url_parts.ToArray());
 			}
 			else {
 				m_service_url = m_service_url_from_description;
 			}
 		}
-
-		public static JsonWsp.Response SendRequest(string url, string data="", string content_type="application/json; charset=utf-8") {
+	
+		public static JsonWsp.Response SendRequest(string url, string data, string content_type) {
 			// Send request
 			WebRequest request = WebRequest.Create(url);
 			
@@ -68,7 +65,21 @@ namespace JsonWsp {
 			
 			return json_response;
 		}
-
+	
+	    public static JsonWsp.Response SendRequest(string url, string data)
+	    {
+	        string content_type = "application/json; charset=utf-8";
+	        return SendRequest(url, data, content_type);
+	    }
+	
+	    public static JsonWsp.Response SendRequest(string url)
+	    {
+	        string content_type = "application/json; charset=utf-8";
+	        string data = "";
+	        return SendRequest(url, data, content_type);
+	    }
+	
+	
 		public JsonWsp.Response CallMethod(string methodname,JsonObject args) {
 			JsonObject req_dict = new JsonObject();
 			req_dict.Add("methodname",methodname);
