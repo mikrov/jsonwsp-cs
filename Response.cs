@@ -17,7 +17,8 @@ namespace JsonWsp {
 		public long m_lineno;
 		
 		public Fault (JsonObject fault) {
-			m_details = String.Join("\n",(JsonArray) fault["detail"]);
+            JsonArray detail = (JsonArray)fault["detail"];
+			m_details = String.Join("\n",(string[]) detail.ToArray());
 			m_error_string = (string) fault["string"];
 			m_fault_type = (string)fault["code"]=="server"?FaultType.ServerFault:FaultType.ClientFault;
 			m_filename = (string)fault["filename"];
