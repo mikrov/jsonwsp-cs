@@ -35,19 +35,19 @@ namespace jsontest
 		
 		public static void Main (string[] args)
 		{
-			JsonWsp.Client cli = new JsonWsp.Client("http://10.1.5.160/service/AccessService/jsonwsp/description");
+			JsonWsp.Client cli = new JsonWsp.Client("https://mvid-services.mv-nordic.com/v2/UserService/jsonwsp/description");
 			cli.SetViaProxy(true);
 			if (args.Length==0) {
 				Console.WriteLine("Usage: jsontest.exe <session_id>");
 				return;
 			}
-			Console.WriteLine("Call listPermissions");
+			Console.WriteLine("Call listOwnPermissions");
 			Console.WriteLine("--------------------");
 			// Build arguments
 			JsonObject args_dict = new JsonObject();
 			args_dict.Add("session_id",args[0]);
 			// Call method
-			JsonObject result = CommonCall(cli,"listPermissions",args_dict);
+			JsonObject result = CommonCall(cli,"listOwnPermissions",args_dict);
 			if (result != null) {
 				Jayrock.Json.JsonArray perm = (Jayrock.Json.JsonArray) result["access_identifiers"];
 				foreach (string i in perm) {
@@ -61,7 +61,7 @@ namespace jsontest
 			// Build arguments
 			JsonObject args_dict2 = new JsonObject();
 			args_dict2.Add("session_id",args[0]);
-			args_dict2.Add("access_identifier","product.web.10finger");
+			args_dict2.Add("access_identifier", "product.web.da.10fingers.release");
 			// Call method
 			result = CommonCall(cli,"hasPermission",args_dict2);
 			// Print
@@ -74,23 +74,22 @@ namespace jsontest
 					Console.WriteLine("Access Denied");
 				}
 			}
-			
+
 			Console.WriteLine();
-			Console.WriteLine("Call getUserInfo");
-			Console.WriteLine("----------------");
-			cli = new JsonWsp.Client("http://10.1.5.160/service/UserService/jsonwsp/description");
-			result = CommonCall(cli,"getUserInfo",args_dict);
-			
-			if (result != null) {
-				JsonObject user_info = (JsonObject) result["user_info"];
-				Console.WriteLine("Org-name:    " + user_info["org_name"]);
-				Console.WriteLine("Org-domain:  " + user_info["org_domain"]);
-				Console.WriteLine("Org-code:    " + user_info["org_code"]);
-				Console.WriteLine("Org-type:    " + user_info["org_type"]);
-				Console.WriteLine("Given Name:  " + user_info["given_name"]);
-				Console.WriteLine("Surname:     " + user_info["surname"]);
+			Console.WriteLine("Call whoami");
+			Console.WriteLine("-------------------");
+			// Build arguments
+			JsonObject args_dict3 = new JsonObject();
+			args_dict3.Add("session_id", args[0]);
+			// Call method
+			result = CommonCall(cli, "whoami", args_dict3);
+			if (result != null)
+			{
+				JsonObject user_info = (JsonObject)result["user_info"];
+				Console.WriteLine("Domain: " + user_info["domain"]);
+				Console.WriteLine("Given Name:  " + user_info["givenName"]);
+				Console.WriteLine("Surname:     " + user_info["sn"]);
 				Console.WriteLine("Uid:         " + user_info["uid"]);
-				Console.WriteLine("Common-name: " + user_info["common_name"]);
 			}
 		}
 	}
