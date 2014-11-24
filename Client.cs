@@ -62,6 +62,14 @@ namespace JsonWsp {
             }
         }
 
+        public void RemoveCookie(String name)
+        {
+            if (m_cookieList.ContainsKey(name))
+            {
+                m_cookieList.Remove(name);
+            }
+        }
+
         public static JsonWsp.Response SendRequest(string url, string data, string content_type, Dictionary<String, String> cookies = null)
         {
 			// Send request
@@ -115,16 +123,27 @@ namespace JsonWsp {
 	        string data = "";
 	        return SendRequest(url, data, content_type);
 	    }
-	
-	
-		public JsonWsp.Response CallMethod(string methodname,JsonObject args) {
+
+
+        public JsonWsp.Response CallMethod(string methodname, JsonObject args, Dictionary<String, String> cookies = null)
+        {
 			JsonObject req_dict = new JsonObject();
 			req_dict.Add("methodname",methodname);
 			req_dict.Add("type","jsonwsp/request");
 			req_dict.Add("args",args);
 			JsonWriter json_req_writer = new JsonTextWriter();
 			req_dict.Export(json_req_writer);
-			JsonWsp.Response jsonwsp_response = SendRequest(m_service_url,json_req_writer.ToString(),m_cookieList);
+
+            Dictionary<String, String> cookieList = m_cookieList;
+            if (cookies != null)
+            {
+                foreach (String key in cookies.Keys)
+                {
+                    cookieList[key] = cookies[key];
+                }
+            }
+
+            JsonWsp.Response jsonwsp_response = SendRequest(m_service_url, json_req_writer.ToString(), cookieList);
 			// Convert response text
 			return jsonwsp_response;
 		}
