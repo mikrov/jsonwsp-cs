@@ -14,8 +14,10 @@ namespace JsonWsp {
 		public string m_service_url;
 		public string m_description_url;
         public Dictionary<String, String> m_cookieList = null;
-		
-		public Client (string description_url,Dictionary<String,String> cookies=null) {
+        public Dictionary<String, String> m_headerList = null;
+
+        public Client(string description_url, Dictionary<String, String> cookies = null, Dictionary<String, String> headers = null)
+        {
 
             if (cookies == null)
             {
@@ -26,8 +28,18 @@ namespace JsonWsp {
                 m_cookieList = cookies;
             }
 
+            if (headers == null)
+            {
+                m_headerList = new Dictionary<string, string>();
+            }
+            else
+            {
+                m_headerList = headers;
+            }
+
 			m_description_url = description_url;
-			JsonWsp.Response resp = SendRequest(description_url);
+            string content_type = "application/json; charset=utf-8";
+            JsonWsp.Response resp = SendRequest(description_url,"",content_type, m_cookieList, m_headerList);
 			if (resp.GetJsonWspType()==JsonWsp.Response.JsonWspType.Description) {
 				JsonObject json_response = (JsonObject) JsonConvert.Import(resp.GetResponseText());
 				m_service_url = (string) json_response["url"];
@@ -70,7 +82,27 @@ namespace JsonWsp {
             }
         }
 
-        public static JsonWsp.Response SendRequest(string url, string data, string content_type, Dictionary<String, String> cookies = null)
+        public void AddHeader(String name, String value)
+        {
+            if (m_headerList.ContainsKey(name))
+            {
+                m_headerList[name] = value;
+            }
+            else
+            {
+                m_headerList.Add(name, value);
+            }
+        }
+
+        public void RemoveHeader(String name)
+        {
+            if (m_headerList.ContainsKey(name))
+            {
+                m_headerList.Remove(name);
+            }
+        }
+
+        public static JsonWsp.Response SendRequest(string url, string data, string content_type, Dictionary<String, String> cookies = null, Dictionary<String, String> headers = null)
         {
 			// Send request
 			WebRequest request = WebRequest.Create(url);
@@ -88,6 +120,15 @@ namespace JsonWsp {
                     cookieString += (cookieString != "" ? "; " : "")+name+"="+cookies[name];
                 }
                 request.Headers.Add("Cookie: " + cookieString);
+            }
+
+            // Add headers to request
+            if (headers.Count > 0)
+            {
+                foreach (String name in headers.Keys)
+                {
+                    request.Headers.Add(name+": " + headers[name]);
+                }   
             }
             
 			Stream dataStream;
@@ -125,7 +166,7 @@ namespace JsonWsp {
 	    }
 
 
-        public JsonWsp.Response CallMethod(string methodname, JsonObject args, Dictionary<String, String> cookies = null)
+        public JsonWsp.Response CallMethod(string methodname, JsonObject args, Dictionary<String, String> cookies = null, Dictionary<String, String> headers = null)
         {
 			JsonObject req_dict = new JsonObject();
 			req_dict.Add("methodname",methodname);
@@ -143,7 +184,17 @@ namespace JsonWsp {
                 }
             }
 
-            JsonWsp.Response jsonwsp_response = SendRequest(m_service_url, json_req_writer.ToString(), cookieList);
+            Dictionary<String, String> headerList = m_headerList;
+            if (headers != null)
+            {
+                foreach (String key in headers.Keys)
+                {
+                    headerList[key] = headers[key];
+                }
+            }
+
+            string content_type = "application/json; charset=utf-8";
+            JsonWsp.Response jsonwsp_response = SendRequest(m_service_url, json_req_writer.ToString(),content_type, cookieList, headerList);
 			// Convert response text
 			return jsonwsp_response;
 		}
